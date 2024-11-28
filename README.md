@@ -2,7 +2,7 @@
 
 ## Descrição
 
-Este é um jogo interativo de revisão sobre análise de algoritmos e grafos. Desenvolvido por Cadu Kar Alho, o jogo apresenta questões baseadas em conceitos de grafos, algoritmos de busca, árvore, e outros tópicos relacionados. O objetivo é testar seus conhecimentos enquanto se diverte com um design colorido e dinâmico.
+Este é um jogo interativo de revisão sobre análise de algoritmos e grafos. O objetivo é testar seus conhecimentos enquanto se diverte com um design colorido e dinâmico.
 
 O jogo contém perguntas de múltipla escolha, incluindo imagens ilustrativas para ajudar na compreensão dos conceitos. As respostas corretas são pontuadas, e ao final do jogo, o usuário recebe um feedback sobre seu desempenho.
 
