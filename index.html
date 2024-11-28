@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Revisão</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #32353b, #d3e506);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto; /* Permite rolagem */
+            padding: 20px; /* Evita que o conteúdo grude na borda */
+        }
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #4c1a57;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 1s ease-in-out;
+            word-wrap: break-word; /* Quebra palavras longas */
+        }
+        .game-container:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, #160101 20%, #d3e506 90%);
+            z-index: -1;
+            animation: spinBg 8s linear infinite;
+        }
+        @keyframes spinBg {
+            0% { transform: rotate(0); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        h1 {
+            color: #d3e506;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .option {
+            border: 2px solid transparent;
+            border-radius: 10px;
+            background-color: #f7f3fc;
+            color: #160101;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        .option:hover {
+            background-color: #e3d3f8;
+            border-color: #160101;
+            transform: scale(1.05);
+        }
+        .correct {
+            background-color: #28a745 !important;
+            color: white;
+        }
+        .wrong {
+            background-color: #dc3545 !important;
+            color: white;
+        }
+        #feedback {
+            font-weight: bold;
+            margin-top: 20px;
+            animation: bounce 1s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        #nextBtn, #restartBtn {
+            margin-top: 20px;
+        }
+        #nextBtn {
+            background: #160101;
+            border: none;
+        }
+        #restartBtn {
+            background: #d3e506;
+            border: none;
+        }
+        #nextBtn:hover, #restartBtn:hover {
+            opacity: 0.8;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container text-center">
+        <h1 class="mb-4">👾Jogo de Revisão Análise De Algorítmo👾</h1>
+        <div> Desenvolvido por Cadu Kar Alho </div>
+        <div id="counter" class="mb-3">Respostas corretas: 0</div>
+        <div id="question" class="h5 mb-4">Carregando pergunta...</div>
+        <div id="options" class="mb-3"></div>
+        <div id="feedback" class="alert" style="display: none;"></div>
+        <button id="nextBtn" class="btn btn-lg text-white" style="display: none;" onclick="nextQuestion()">Próxima Pergunta</button>
+        <button id="restartBtn" class="btn btn-lg text-white" style="display: none;" onclick="restartGame()">Reiniciar Jogo</button>
+    </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+
+        const questions = [
+            {
+                question: "O grafo na imagem é conexo?",
+                image: "imagens/conexo.png",
+                options: ["Sim.", "Não."],
+                answer: "a"
+            },{
+        question: "Qual é o grau do vértice C no grafo?",
+        image: "imagens/arvore.png",
+        options: ["2", "3", "1", "4"],
+        answer: "c"
+            },
+            {
+        question: "Qual é o grau do vértice V1 no grafo?",
+        image: "imagens/grau.png",
+        options: ["2", "3", "1", "4"],
+        answer: "b"
+            },
+            {
+        question: "Este grafo possui laço?",
+        image: "imagens/ciclo.png",
+        options: ["Sim.", "Não."],
+        answer: "b"
+            },{
+        question: "O grafo abaixo é uma árvore?",
+        image: "imagens/arvore.png",
+        options: ["Sim.", "Não."],
+        answer: "a"
+    },{
+        question: "Este grafo possui ciclo?",
+        image: "imagens/ciclo.png",
+        options: ["Sim.", "Não."],
+        answer: "a"
+            },
+            {
+        question: "O subgrafo destacado é válido?",
+        image: "imagens/MODELO.png",
+        options: ["a) Sim.", "b) Não."],
+        answer: "a"
+    },{
+        question: "O grafo abaixo é uma árvore?",
+        image: "imagens/arvore2.png",
+        options: ["Sim.", "Não."],
+        answer: "b"
+    },{
+        question: "Qual é a principal diferença entre os algoritmos de Kruskal e Prim?",
+        options: [
+            "Kruskal começa com um vértice e expande a árvore, enquanto Prim ordena todas as arestas antes de começar.",
+            "Kruskal trabalha com grafos dirigidos e Prim com grafos não dirigidos.",
+            "Kruskal é um algoritmo de aproximação, enquanto Prim é exato.",
+            "Kruskal trabalha com todas as arestas do grafo ao mesmo tempo, enquanto Prim escolhe as arestas de forma incremental."
+        ],
+        answer: "d"
+    },
+    {
+        question: "Qual das seguintes afirmações sobre o algoritmo de Kruskal é verdadeira?",
+        options: [
+            "O algoritmo de Kruskal é mais eficiente em grafos densos.",
+            "Kruskal usa uma abordagem gananciosa para escolher as arestas de menor peso.",
+            "Kruskal é mais adequado para grafos direcionados.",
+            "O algoritmo de Kruskal sempre seleciona as arestas sem verificar ciclos."
+        ],
+        answer: "b"
+    }, {
+        question: "O que define um grafo como conexo?",
+        options: [
+            "Todos os vértices possuem grau igual a 1.",
+            "Existe um caminho entre todos os pares de vértices.",
+            "Não possui ciclos.",
+            "Os vértices têm grau de entrada maior que o de saída."
+        ],
+        answer: "b"
+    },{
+        question: "Este grafo é conexo?",
+        image: "imagens/arvore1.png",
+        options: ["Sim.", "Não."],
+        answer: "a"
+    },
+    {
+        question: "O que é um ciclo em um grafo?",
+        options: [
+            "Um caminho que termina em um vértice diferente de onde começou.",
+            "Uma sequência de vértices que começa e termina no mesmo vértice sem repetir arestas.",
+            "Um conjunto de arestas paralelas.",
+            "Uma aresta que conecta um vértice a ele mesmo."
+        ],
+        answer: "b"
+    },
+    {
+        question: "Qual é a principal característica de um grafo completo?",
+        options: [
+            "Todos os vértices possuem grau 0.",
+            "Não há arestas paralelas ou laços.",
+            "Todos os pares de vértices estão conectados por uma aresta.",
+            "Possui ciclos em todos os vértices."
+        ],
+        answer: "c"
+    },
+    {
+        question: "O que é um grafo complementar?",
+        options: [
+            "Um grafo formado pelos vértices do grafo original.",
+            "Um grafo formado pelas arestas que não existem no grafo original.",
+            "Um grafo sem ciclos.",
+            "Um grafo onde todos os vértices têm grau 2."
+        ],
+        answer: "b"
+    },
+    {
+        question: "O que é uma árvore?",
+        options: [
+            "Um grafo acíclico e conexo.",
+            "Um grafo completo com ciclos.",
+            "Um grafo onde todos os vértices possuem grau 1.",
+            "Um grafo complementar."
+        ],
+        answer: "a"
+    },
+    {
+        question: "Qual estrutura é mais eficiente para representar grafos esparsos?",
+        options: [
+            "Matriz de adjacência.",
+            "Lista de adjacência.",
+            "Matriz de incidência.",
+            "Matriz completa."
+        ],
+        answer: "b"
+    },
+    {
+        question: "Qual é o grau de um vértice em um grafo não direcionado?",
+        options: [
+            "O número de arestas conectadas a ele.",
+            "O número de ciclos presentes.",
+            "A soma do grau de entrada e de saída.",
+            "O número de subgrafos conexos."
+        ],
+        answer: "a"
+    },{
+        question: "Qual a busca em LARGURA do grafo?",
+        image: "imagens/busca.png",
+        options: ["A,B,C,D,E,F,G,H", 
+        "A,D,G,H,C,B,F,C",
+        "A,D,C,B,H,G,F,E"],
+        answer: "a"
+    },{
+        question: "Qual a busca em PROFUNDIDADE do grafo?",
+        image: "imagens/busca.png",
+        options: ["A,B,C,D,E,F,G,H", 
+        "A,D,G,H,C,B,F,C",
+        "A,B,E,F,C,G,D,H"],
+        answer: "c"
+    },{
+        question: "O que caracteriza um grafo bipartido?",
+        options: [
+            "Vértices de dois conjuntos disjuntos, com arestas apenas entre os vértices de conjuntos diferentes.",
+            "Um grafo onde todos os vértices estão conectados a outros do mesmo conjunto.",
+            "Grafos com arestas que formam um ciclo.",
+            "Um grafo sem vértices isolados."
+        ],
+        answer: "a"
+    }
+        ];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startGame() {
+            shuffleArray(questions);
+            correctAnswers = 0;
+            updateCounter();
+            loadQuestion();
+        }
+
+        function checkAnswer(selectedOption) {
+            const currentQuestion = questions[currentQuestionIndex];
+            const correctAnswer = currentQuestion.answer;
+            const feedback = document.getElementById("feedback");
+            const options = document.querySelectorAll(".option");
+
+            options.forEach(option => option.style.pointerEvents = "none");
+
+            if (selectedOption === correctAnswer) {
+                feedback.textContent = "Correto! 🎉";
+                feedback.className = "alert alert-success";
+                correctAnswers++;
+                document.querySelector(`[onclick="checkAnswer('${selectedOption}')"]`).classList.add("correct");
+            } else {
+                feedback.textContent = `Errado! A resposta certa é: ${correctAnswer}`;
+                feedback.className = "alert alert-danger";
+                document.querySelector(`[onclick="checkAnswer('${selectedOption}')"]`).classList.add("wrong");
+            }
+
+            feedback.style.display = "block";
+            document.getElementById("nextBtn").style.display = "block";
+            updateCounter();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+                document.getElementById("feedback").style.display = "none";
+                document.getElementById("nextBtn").style.display = "none";
+            } else {
+                document.getElementById("question").textContent = "Você completou o jogo!";
+                document.getElementById("options").style.display = "none";
+                document.getElementById("feedback").textContent = `Parabéns! Você acertou ${correctAnswers} de ${questions.length}.`;
+                document.getElementById("feedback").className = "alert alert-success";
+                document.getElementById("restartBtn").style.display = "block";
+            }
+        }
+
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            const questionEl = document.getElementById("question");
+            const optionsEl = document.getElementById("options");
+
+            // Carregar a pergunta
+            questionEl.innerHTML = currentQuestion.question;
+
+            // Adicionar imagem, se disponível
+            if (currentQuestion.image) {
+                questionEl.innerHTML += `<br><img src="${currentQuestion.image}" alt="Imagem da questão" style="max-width: 100%; margin-top: 10px;">`;
+            }
+
+            // Renderizar as opções
+            optionsEl.innerHTML = currentQuestion.options.map(
+                (option, index) => `<div class="option" onclick="checkAnswer('${String.fromCharCode(97 + index)}')">${option}</div>`
+            ).join("");
+        }
+
+        function updateCounter() {
+            document.getElementById("counter").textContent = `Respostas corretas: ${correctAnswers}`;
+        }
+
+        function restartGame() {
+            currentQuestionIndex = 0;
+            document.getElementById("options").style.display = "block";
+            document.getElementById("restartBtn").style.display = "none";
+            document.getElementById("feedback").style.display = "none";
+            startGame();
+        }
+
+        startGame();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
